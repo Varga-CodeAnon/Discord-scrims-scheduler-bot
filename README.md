@@ -47,10 +47,10 @@ Python version: `3.6`
 Postgres version: `10.5-1`
 Used libraries: 
 ```python
-pip install discord.py
-pip install pytz
-pip install psycopg2
-pip install SQLAlchemy
+pip install discord.py=0.16.12
+pip install pytz=2018.5
+pip install psycopg2=2.7.5
+pip install SQLAlchemy=1.2.12
 pip install python-dateutil==2.6.0
 ```
 To run the bot yourself, you need to create `config.py` that includes:
