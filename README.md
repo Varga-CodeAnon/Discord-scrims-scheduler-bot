@@ -52,6 +52,7 @@ pip install pytz=2018.5
 pip install psycopg2=2.7.5
 pip install SQLAlchemy=1.2.12
 pip install python-dateutil==2.6.0
+pip install requests=2.9.1
 ```
 To run the bot yourself, you need to create `config.py` that includes:
 ```python
