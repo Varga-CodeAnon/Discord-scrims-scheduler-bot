@@ -72,6 +72,11 @@ teamup_apikey = ""
 Discord bot token can be obtained [here](https://discordapp.com/developers/applications/)
 TeamUP API token can be obtained [here](https://teamup.com/api-keys/request)
 
+To run the bot:
+```python
+python main.py
+```
+
 I'm not a big-boy Python programmer, so if you wish to refactor the code and teach me something, feel free to do so!
 
 ## Screenshots showcase
