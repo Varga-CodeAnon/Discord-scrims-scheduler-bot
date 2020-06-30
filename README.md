@@ -1,7 +1,20 @@
 # Discord scrim bot
-> In case of any problems/bugs/need of friends, join the community discord [HERE](http://www.scheduler.patrikpapso.com)
+Simple Discord bot for scheduling events from within Discord, written completely in Python, forked from [BlueXik repo](https://github.com/BlueXik/Discord-scrims-scheduler-bot)
 
-This project is a simple solution for teams to schedule their [scrims](https://www.urbandictionary.com/define.php?term=scrim) on Discord that includes reminders (15 minutes before the scrim) and usage of [TeamUP](https://www.teamup.com/) API to use this service as a free Web Interface for cool looking calendar.
+![](misc/avatar.jpg)
+
+> EN COURS DE DÉVELOPPEMENT
+
+> Le code a été adapté à la dernière version de l'API discord.py, toute la syntaxe a donc été actualisée. Le code a aussi été simplifié, commenté, et adapté pour tout type d'évènement dont on désirerait des rappels sur son serveur Discord
+
+> Crédit photo & avatar du bot : [Fabrizio Verrecchia](https://unsplash.com/@fabrizioverrecchia?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText) sur [Unslpash](https://unsplash.com/photos/Ai7sV3SSMIQ)
+
+- [Discord scrim bot](#discord-scrim-bot)
+  - [Features](#features)
+  - [How to setup the bot](#how-to-setup-the-bot)
+  - [How to run the bot yourself](#how-to-run-the-bot-yourself)
+  - [Screenshots showcase](#screenshots-showcase)
+___
 
 
 I'm currently hosting this bot on my private VPS with Postgres database handling all the data. 
@@ -44,12 +57,32 @@ If you wish to support the maintenance and caffeine costs ->
 - Not needed if you just want to use the bot
 
 Python version: `3.6`
-Postgres version: `10.5-1`
+Postgres version: `10.5-1`  --> Cf [L'utilisateur postgres](https://doc.ubuntu-fr.org/postgresql)
+```
+user@debian:~$ sudo adduser discord_admin
+user@debian:~$ sudo passwd discord_admin
+user@debian:~$ sudo -i -u postgres
+postgres@debian:~$ psql
+postgres=# CREATE USER discord_admin;
+postgres=# ALTER ROLE discord_admin WITH CREATEDB;
+postgres=# CREATE DATABASE discord_admin OWNER discord_admin;
+```
+> Note : si une base de données possède le même nom que l'utilisateur avec lequel on se connecte alors le client psql se connecte par défaut à cette base. 
+```
+postgres=# ALTER USER discord_admin WITH ENCRYPTED PASSWORD '*****';
+postgres=# \q
+postgres@debian:~$ su discord_admin
+Mot de passe : 
+discord_admin@debian:/var/lib/postgresql$ psql -d discord_admin
+discord_admin=> 
+```
+
 Used libraries: 
 ```python
+# python3.8 -m pip install -r requirements.txt
 pip install discord.py=0.16.12
 pip install pytz=2018.5
-pip install psycopg2=2.7.5
+pip install psycopg2=2.7.5 # AU PREALABLE : sudo apt install python3-dev postgresql postgresql-contrib python3-psycopg2 libpq-dev  # en cas de python setup.py egg_info failed with error code 1
 pip install SQLAlchemy=1.2.12
 pip install python-dateutil==2.6.0
 pip install requests=2.9.1
@@ -57,17 +90,19 @@ pip install requests=2.9.1
 To run the bot yourself, you need to create `config.py` that includes:
 ```python
 postgres = {
-    "host": "host",
-    "database": "database",
-    "user": "user",
-    "password": "password"
+    "host": "127.0.0.1", # 5432 port is default, don't include it
+    "database": "discord_admin",
+    "user": "discord_admin",
+    "password": "*****"
     }
+
 bot = {
-    "version" : "dev", # dev/prod - defines used token below
-    "dev_token": "login_token",
-    "prod_token": "login_token"
+    "version" : "dev", # dev/prod - determines which bot token is used + commands availability
+    "dev_token": "azehgkjhSdghkjhIxODg5.XvsdPQ.8Q7KAExDqsdEsi99xAC54F-m9dt6d",
+    "prod_token": "azehgkjhSdghkjhIxODg5.XvsdPQ.8Q7KAExDqsdEsi99xAC54F-m9dt6d"
     }
-teamup_apikey = ""
+
+teamup_apikey = "" # team up api key from https://teamup.com/api-keys/request
 ```
 Discord bot token can be obtained [here](https://discordapp.com/developers/applications/)
 TeamUP API token can be obtained [here](https://teamup.com/api-keys/request)
