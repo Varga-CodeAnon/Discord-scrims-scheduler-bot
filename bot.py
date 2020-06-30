@@ -39,11 +39,11 @@ class Scrim_bot:
                 if len(channel_mentions) == 2:
                     schedule_channel_id = channel_mentions[0]
                     reminder_channel_id = channel_mentions[1]
-                    msg = await disc.send_message(discord.Object(schedule_channel_id), "...")
+                    msg = await message.channel.send("...")
                     if msg is not None:
                         # Save server data to server for future use
                         with db.connect() as session:
-                            res = session.query(Servers).filter(Servers.discord_server_id == message.server.id).count()
+                            res = session.query(Servers).filter(Servers.discord_server_id == message.server.id).count()  #FIXME:
                             session.expunge_all()
                         if res == 0:
                             with db.connect() as session:
@@ -73,15 +73,15 @@ class Scrim_bot:
                                 owner_role_name = role.name
                             if role.id == reminder_role_id:
                                 reminder_role_name = role.name
-                        await disc.send_message(message.channel, embed=embeds.Success("Server has been setup", "You have successfuly set up the server\nOwner: %s\nMention: %s\nSchedule: %s\nReminder: %s" % (owner_role_name, reminder_role_name, schedule_channel_name, reminder_channel_name)))
+                        await message.channel.send(embed=embeds.Success("Server has been setup", "You have successfuly set up the server\nOwner: %s\nMention: %s\nSchedule: %s\nReminder: %s" % (owner_role_name, reminder_role_name, schedule_channel_name, reminder_channel_name)))
                     else:
-                        await disc.send_message(message.channel, embed=embeds.Error("Error sending a schedule message", "Make sure the bot has permissions to write into channel you specified for schedule."))
+                        await message.channel.send(embed=embeds.Error("Error sending a schedule message", "Make sure the bot has permissions to write into channel you specified for schedule."))
                 else:
-                    await disc.send_message(message.channel, embed=embeds.Error("Wrong arguments", "You need to provide 2 channel (schedule + reminders)"))
+                    await message.channel.send(embed=embeds.Error("Wrong arguments", "You need to provide 2 channel (schedule + reminders)"))
             else:
-                await disc.send_message(message.channel, embed=embeds.Error("Wrong arguments", "You need to provide 2 mentionable roles (owner + reminder)"))
+                await message.channel.send(embed=embeds.Error("Wrong arguments", "You need to provide 2 mentionable roles (owner + reminder)"))
         else:
-            await disc.send_message(message.channel, embed=embeds.Error("Wrong arguments", "Unknown timezone, try to use this [LINK](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) for reference."))
+            await message.channel.send(embed=embeds.Error("Wrong arguments", "Unknown timezone, try to use this [LINK](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) for reference."))
    
     async def add_scrim(self, message):
         '''
@@ -144,7 +144,7 @@ class Scrim_bot:
             embed.add_field(name="Opponent", value=enemy_team_name, inline=False)
 
             # send embed as a response
-            await disc.send_message(message.channel, embed=embed)
+            await message.channel.send(embed=embed)
             # update schedule with current changes
             await self.update_schedule(message)
 
@@ -153,7 +153,7 @@ class Scrim_bot:
                 iso_fmt = "%Y-%m-%dT%H:%M%SZ" #2015-01-31T10:00:00Z
                 tup_data = teamup.create_event(utc_ts.strftime(iso_fmt), utc_te.strftime(iso_fmt), "Scrim vs %s" % enemy_team_name, server_data["teamup_calendarkey"], server_data["teamup_subcalendar_id"])
                 if "error" in tup_data:
-                    await disc.send_message(message.channel, embed=embeds.Error("TeamUP Error", tup_data["error"]["message"]))    
+                    await message.channel.send(embed=embeds.Error("TeamUP Error", tup_data["error"]["message"]))    
                 else:
                     with db.connect() as session:
                         res = session.query(Scrims).filter(Scrims.id == scrim["id"]).\
@@ -162,9 +162,9 @@ class Scrim_bot:
                         session.expunge_all()
 
                     if res == 1:
-                        await disc.send_message(message.channel, embed=embeds.Success("Added to TeamUP", "Scrim has been successfuly added to TeamUP calendar"))
+                        await message.channel.send(embed=embeds.Success("Added to TeamUP", "Scrim has been successfuly added to TeamUP calendar"))
         else:
-            await disc.send_message(message.channel, embed=embeds.Error("Wrong arguments", "Wrong argument provided, use `!scrimadd help` for help"))          
+            await message.channel.send(embed=embeds.Error("Wrong arguments", "Wrong argument provided, use `!scrimadd help` for help"))          
             return
 
     async def delete_scrim(self, message):
@@ -182,7 +182,7 @@ class Scrim_bot:
                 session.expunge_all()
             
             if res == 1:
-                await disc.send_message(message.channel, embed=embeds.Success("Succesfully deleted scrim", "Scrim with ID %s has been deleted" % vals[1]))
+                await message.channel.send(embed=embeds.Success("Succesfully deleted scrim", "Scrim with ID %s has been deleted" % vals[1]))
                 # update schedule with current changes
                 await self.update_schedule(message)
 
@@ -192,13 +192,13 @@ class Scrim_bot:
                 if server["teamup_calendarkey"] is not None:
                     status_code = teamup.delete_event(server["teamup_calendarkey"], scrim["teamup_event_id"], scrim["teamup_event_version"])
                     if status_code == 200:
-                        await disc.send_message(message.channel, embed=embeds.Success("Deleted from TeamUP", "Scrim has been successfuly deleted from TeamUP calendar"))
+                        await message.channel.send(embed=embeds.Success("Deleted from TeamUP", "Scrim has been successfuly deleted from TeamUP calendar"))
                     else:
-                        await disc.send_message(message.channel, embed=embeds.Error("Error deleting from TeamUP", "Error occured while deleting from TeamUP calendar, event doesn't exist or it has be edited (delete manually)"))
+                        await message.channel.send(embed=embeds.Error("Error deleting from TeamUP", "Error occured while deleting from TeamUP calendar, event doesn't exist or it has be edited (delete manually)"))
             else:
-                await disc.send_message(message.channel, embed=embeds.Error("Wrong arguments", "No scrim has been deleted, either ID doesn't exist or this scrim doesn't belong to this server."))          
+                await message.channel.send(embed=embeds.Error("Wrong arguments", "No scrim has been deleted, either ID doesn't exist or this scrim doesn't belong to this server."))          
         else:
-            await disc.send_message(message.channel, embed=embeds.Error("Wrong arguments", "Wrong argument provided, use `!scrimdelete help` for help"))
+            await message.channel.send(embed=embeds.Error("Wrong arguments", "Wrong argument provided, use `!scrimdelete help` for help"))
 
     async def edit_scrim(self, message):
         '''
@@ -261,7 +261,7 @@ class Scrim_bot:
                 embed.add_field(name="Start of the scrim", value=time_start_tz.strftime(fmt), inline=True)
                 embed.add_field(name="End of the scrim", value=time_end_tz.strftime(fmt), inline=True)
                 embed.add_field(name="Opponent", value=enemy_team_name, inline=False)
-                await disc.send_message(message.channel, embed=embed)
+                await message.channel.send(embed=embed)
                 # update schedule with current changes
                 await self.update_schedule(message)
 
@@ -278,7 +278,7 @@ class Scrim_bot:
                                                   utc_te.strftime(iso_fmt),
                                                   "Scrim vs %s" % enemy_team_name)
                     if "error" in tup_data:
-                        await disc.send_message(message.channel, embed=embeds.Error("TeamUP Error", tup_data["error"]["message"]))
+                        await message.channel.send(embed=embeds.Error("TeamUP Error", tup_data["error"]["message"]))
                     else:
                         with db.connect() as session:
                             res = session.query(Scrims).filter(Scrims.discord_server_id == message.server.id).\
@@ -286,11 +286,11 @@ class Scrim_bot:
                                                         update({"teamup_event_version": tup_data["event"]["version"]})
                             session.expunge_all()
                         if res == 1:
-                            await disc.send_message(message.channel, embed=embeds.Success("Edited in TeamUP", "Scrim has been successfuly edited in TeamUP calendar"))
+                            await message.channel.send(embed=embeds.Success("Edited in TeamUP", "Scrim has been successfuly edited in TeamUP calendar"))
             else:
-                await disc.send_message(message.channel, embed=embeds.Error("Wrong arguments", "No scrim has been edited, either ID doesn't exist or this scrim doesn't belong to this server."))          
+                await message.channel.send(embed=embeds.Error("Wrong arguments", "No scrim has been edited, either ID doesn't exist or this scrim doesn't belong to this server."))          
         else:
-            await disc.send_message(message.channel, embed=embeds.Error("Wrong arguments", "Wrong argument provided, use `!scrimedit help` for help"))
+            await message.channel.send(embed=embeds.Error("Wrong arguments", "Wrong argument provided, use `!scrimedit help` for help"))
 
     #
     # TODO - in one function plzzzzzzzz
@@ -310,7 +310,7 @@ class Scrim_bot:
             if msg is not None:
                 await disc.edit_message(msg, embed=schedule_embed)
             else:
-                await disc.send_message(message.channel, embed=embeds.Error("Schedule message not found", "Schedule update unsuccessful, you probably deleted schedule message, setup server again to create a new one."))          
+                await message.channel.send(embed=embeds.Error("Schedule message not found", "Schedule update unsuccessful, you probably deleted schedule message, setup server again to create a new one."))          
 
     async def update_schedule_by_server_id(self, server_id):
         today = datetime.today()
@@ -345,7 +345,7 @@ class Scrim_bot:
                                                          "teamup_subcalendar_id": None})
                     session.expunge_all()
                  if res == 1:
-                     await disc.send_message(message.channel, embed=embeds.Success("TeamUP API disconnected", "TeamUP has been succesfuly disconnected"))
+                     await message.channel.send(embed=embeds.Success("TeamUP API disconnected", "TeamUP has been succesfuly disconnected"))
                      return
             # test calendar key
             data = teamup.create_sub_calendar("Scrim bot subcalendar", 18, vals[1])
@@ -358,11 +358,11 @@ class Scrim_bot:
                                                              "teamup_subcalendar_id": data["subcalendar"]["id"]})
                         session.expunge_all()
                 
-                    await disc.send_message(message.channel, embed=embeds.Success("TeamUP API connected", "New sub-calendar has been created on your TeamUP calendar"))
+                    await message.channel.send(embed=embeds.Success("TeamUP API connected", "New sub-calendar has been created on your TeamUP calendar"))
             else:
-                await disc.send_message(message.channel, embed=embeds.Error("Something went wrong with TeamUP", "Calendarkey is invalid or request took too long, try again later..."))
+                await message.channel.send(embed=embeds.Error("Something went wrong with TeamUP", "Calendarkey is invalid or request took too long, try again later..."))
         else:
-            await disc.send_message(message.channel, embed=embeds.Error("Wrong arguments", "Wrong argument provided, use `!teamup help` for help"))
+            await message.channel.send(embed=embeds.Error("Wrong arguments", "Wrong argument provided, use `!teamup help` for help"))
     
     async def teamup_changed(self, server_id):
         '''
