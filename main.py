@@ -124,9 +124,8 @@ async def on_ready():
     client.loop.create_task(periodicReminders())
     client.loop.create_task(periodicTeamUPSync())
     # cool status when bot is online
-    game = discord.Game(name="DEVELOPMENT" if cfg.bot["version"] == "dev" else "scheduler.patrikpapso.com")
-    await client.change_presence(game=game)
-
+    game = discord.Game("schedule a tournament")
+    await client.change_presence(status=discord.Status.idle, activity=game)
 # on message go through registered commands
 @client.event
 async def on_message(message):
