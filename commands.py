@@ -57,9 +57,7 @@ class Command:
 
     # default help message for every command (!command help)
     async def help(self, message):
-        help_embed = embeds.Info("Help for command `%s`" % self.activation_string, self.help_string)
-        help_embed.add_field(name="Example", value=self.example)
-        await disc.send_message(message.channel, embed=help_embed)
+        await message.channel.send("Help for command "+ self.activation_string + "\n" + self.help_string + "\nExample" + self.example)
 
 class Setup(Command):
     activation_string = "!setup"
