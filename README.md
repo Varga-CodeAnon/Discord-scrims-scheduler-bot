@@ -9,6 +9,8 @@ Simple Discord bot for scheduling events from within Discord, written completely
 
 > Crédit photo & avatar du bot : [Fabrizio Verrecchia](https://unsplash.com/@fabrizioverrecchia?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText) sur [Unslpash](https://unsplash.com/photos/Ai7sV3SSMIQ)
 
+TODO: Corriger la commande setup, puis la commande scrimadd/edit/delete
+
 - [Discord scrim bot](#discord-scrim-bot)
   - [Features](#features)
   - [How to setup the bot](#how-to-setup-the-bot)

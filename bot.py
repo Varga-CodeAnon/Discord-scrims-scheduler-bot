@@ -43,17 +43,18 @@ class Scrim_bot:
                     if msg is not None:
                         # Save server data to server for future use
                         with db.connect() as session:
-                            res = session.query(Servers).filter(Servers.discord_server_id == message.server.id).count()  #FIXME:
+                            res = session.query(Servers).filter(Servers.discord_server_id == str(message.guild.id)).count()  #FIXME: probleme de type, tentative de conversion de l'int en str
+                                                                                                                             #TODO: YEEEEES, c'était ça, le str a réglé le problème
                             session.expunge_all()
                         if res == 0:
                             with db.connect() as session:
-                                server = Servers(message.server.id, message.server.name, vals[1], owner_role_id, reminder_role_id, schedule_channel_id, reminder_channel_id, msg.id)
+                                server = Servers(str(message.guild.id), message.guild.name, vals[1], owner_role_id, reminder_role_id, schedule_channel_id, reminder_channel_id, msg.id)
                                 session.add(server)
-                            print("new server - " + message.server.name)
+                            print("new server - " + message.guild.name)
                         else:
                             with db.connect() as session:
-                                update_res = session.query(Servers).filter(Servers.discord_server_id == message.server.id).\
-                                                                    update({"owner_role": owner_role_id,
+                                update_res = session.query(Servers).filter(Servers.discord_server_id == str(message.guild.id)).\
+                                                                    update({"owner_role": owner_role_id,  # FIXME: Rien n'apparait sur discord, pas normal
                                                                             "mention_role": reminder_role_id,
                                                                             "channel_id_schedule": schedule_channel_id,
                                                                             "channel_id_reminder": reminder_channel_id,
@@ -61,10 +62,10 @@ class Scrim_bot:
                                                                             "timezone": vals[1]})
                         
                                 session.expunge_all()
-                        await self.update_schedule(message)
+                        await self.update_schedule(message) # FIXME: à corriger et ce sera bon
                         # get saved channel names
-                        schedule_channel_name = message.server.get_channel(schedule_channel_id)
-                        reminder_channel_name = message.server.get_channel(reminder_channel_id)
+                        schedule_channel_name = message.guild.get_channel(schedule_channel_id)
+                        reminder_channel_name = message.guild.get_channel(reminder_channel_id)
                         # since discordpy doesnt give me role by id, I will pull out the role from message itself by id
                         owner_role_name = ""
                         reminder_role_name = ""
@@ -94,7 +95,7 @@ class Scrim_bot:
             with db.connect() as session:
                 query = (
                     session.query(Servers)
-                    .filter_by(discord_server_id=message.server.id)
+                    .filter_by(discord_server_id=message.guild.id)
                     .first()
                 )
                 session.expunge_all()
@@ -127,7 +128,7 @@ class Scrim_bot:
             enemy_team_name = " ".join(str(x) for x in vals[4:])
             # save the entry into database
             with db.connect() as session:
-                scrim = Scrims(message.server.id, scrim_date, utc_ts, utc_te, enemy_team_name)
+                scrim = Scrims(message.guild.id, scrim_date, utc_ts, utc_te, enemy_team_name)
                 session.add(scrim)
                 session.flush()
                 session.expunge_all()
@@ -176,9 +177,9 @@ class Scrim_bot:
         vals = message.content.split(" ")
         if len(vals) == 2:
             with db.connect() as session:
-                server = session.query(Servers).filter_by(discord_server_id=message.server.id).first()
+                server = session.query(Servers).filter_by(discord_server_id=message.guild.id).first()
                 scrim = session.query(Scrims).filter(Scrims.id == vals[1]).first()
-                res = session.query(Scrims).filter(Scrims.id == vals[1]).filter(Scrims.discord_server_id == message.server.id).delete()
+                res = session.query(Scrims).filter(Scrims.id == vals[1]).filter(Scrims.discord_server_id == message.guild.id).delete()
                 session.expunge_all()
             
             if res == 1:
@@ -210,7 +211,7 @@ class Scrim_bot:
         if len(vals) >= 6:
             # identical parsing to !scrimadd, just shifted arguments (cuz of ID)
             with db.connect() as session:
-                query = session.query(Servers).filter_by(discord_server_id=message.server.id).first()
+                query = session.query(Servers).filter_by(discord_server_id=message.guild.id).first()
                 session.expunge_all()
 
             server_data = query.as_dict()
@@ -242,10 +243,10 @@ class Scrim_bot:
             
             # update record in database
             with db.connect() as session:
-                server = session.query(Servers).filter_by(discord_server_id=message.server.id).first()
+                server = session.query(Servers).filter_by(discord_server_id=message.guild.id).first()
                 # I only need teamup_event_id and teamup_event_version, so it's fine querying it before edit
                 scrim = session.query(Scrims).filter(Scrims.id == vals[1]).first() 
-                res = session.query(Scrims).filter(Scrims.discord_server_id == message.server.id).\
+                res = session.query(Scrims).filter(Scrims.discord_server_id == message.guild.id).\
                                             filter(Scrims.id == vals[1]).\
                                             update({"date": scrim_date,
                                                     "time_start": utc_ts,
@@ -281,7 +282,7 @@ class Scrim_bot:
                         await message.channel.send(embed=embeds.Error("TeamUP Error", tup_data["error"]["message"]))
                     else:
                         with db.connect() as session:
-                            res = session.query(Scrims).filter(Scrims.discord_server_id == message.server.id).\
+                            res = session.query(Scrims).filter(Scrims.discord_server_id == message.guild.id).\
                                                         filter(Scrims.id == vals[1]).\
                                                         update({"teamup_event_version": tup_data["event"]["version"]})
                             session.expunge_all()
@@ -300,7 +301,7 @@ class Scrim_bot:
         week_from_today = today + timedelta(days=7)
 
         with db.connect() as session:
-            query = session.query(Servers).filter(Servers.discord_server_id == message.server.id).first()
+            query = session.query(Servers).filter(Servers.discord_server_id == str(message.guild.id)).first()
             session.expunge_all()
         
         if query is not None:
@@ -340,7 +341,7 @@ class Scrim_bot:
         if len(vals) == 2:
             if vals[1] == "-":
                  with db.connect() as session:
-                    res = session.query(Servers).filter(Servers.discord_server_id == message.server.id).\
+                    res = session.query(Servers).filter(Servers.discord_server_id == str(message.guild.id)).\
                                                  update({"teamup_calendarkey": None,
                                                          "teamup_subcalendar_id": None})
                     session.expunge_all()
@@ -353,7 +354,7 @@ class Scrim_bot:
                 # save this key to database
                 if data is not None:
                     with db.connect() as session:
-                        res = session.query(Servers).filter(Servers.discord_server_id == message.server.id).\
+                        res = session.query(Servers).filter(Servers.discord_server_id == str(message.guild.id)).\
                                                      update({"teamup_calendarkey": vals[1],
                                                              "teamup_subcalendar_id": data["subcalendar"]["id"]})
                         session.expunge_all()
