@@ -23,7 +23,8 @@ class Scrim_bot:
 
     async def setup(self, message):
         '''
-		    Command: !setup [timezone] [owner] [mention] [schedule-channel] [reminder-channel]
+		    Command: !setup  [timezone]         [owner]               [mention]          [schedule-channel]   [reminder-channel]
+                     !setup Europe/Paris <@&727821582361296946> <@&727821634135785534> <#727632042090823762> <#603885833216327680>
               vals -    0       1
             Whole setup is contained in one command to keep it simple
         '''
@@ -43,8 +44,7 @@ class Scrim_bot:
                     if msg is not None:
                         # Save server data to server for future use
                         with db.connect() as session:
-                            res = session.query(Servers).filter(Servers.discord_server_id == str(message.guild.id)).count()  #FIXME: probleme de type, tentative de conversion de l'int en str
-                                                                                                                             #TODO: YEEEEES, c'était ça, le str a réglé le problème
+                            res = session.query(Servers).filter(Servers.discord_server_id == str(message.guild.id)).count()  # Conversion to str required since the update
                             session.expunge_all()
                         if res == 0:
                             with db.connect() as session:
@@ -54,7 +54,7 @@ class Scrim_bot:
                         else:
                             with db.connect() as session:
                                 update_res = session.query(Servers).filter(Servers.discord_server_id == str(message.guild.id)).\
-                                                                    update({"owner_role": owner_role_id,  # FIXME: Rien n'apparait sur discord, pas normal
+                                                                    update({"owner_role": owner_role_id,
                                                                             "mention_role": reminder_role_id,
                                                                             "channel_id_schedule": schedule_channel_id,
                                                                             "channel_id_reminder": reminder_channel_id,
@@ -63,17 +63,11 @@ class Scrim_bot:
                         
                                 session.expunge_all()
                         await self.update_schedule(message) # FIXME: à corriger et ce sera bon
-                        # get saved channel names
-                        schedule_channel_name = message.guild.get_channel(schedule_channel_id)
-                        reminder_channel_name = message.guild.get_channel(reminder_channel_id)
-                        # since discordpy doesnt give me role by id, I will pull out the role from message itself by id
-                        owner_role_name = ""
-                        reminder_role_name = ""
-                        for role in message.role_mentions:
-                            if role.id == owner_role_id:
-                                owner_role_name = role.name
-                            if role.id == reminder_role_id:
-                                reminder_role_name = role.name
+                        # Get saved channel names
+                        schedule_channel_name = message.guild.get_channel(int(schedule_channel_id)) # Conversion to int required since the update
+                        reminder_channel_name = message.guild.get_channel(int(reminder_channel_id))
+                        owner_role_name = message.guild.get_role(int(owner_role_id))
+                        reminder_role_name = message.guild.get_role(int(reminder_role_id))
                         await message.channel.send(embed=embeds.Success("Server has been setup", "You have successfuly set up the server\nOwner: %s\nMention: %s\nSchedule: %s\nReminder: %s" % (owner_role_name, reminder_role_name, schedule_channel_name, reminder_channel_name)))
                     else:
                         await message.channel.send(embed=embeds.Error("Error sending a schedule message", "Make sure the bot has permissions to write into channel you specified for schedule."))
