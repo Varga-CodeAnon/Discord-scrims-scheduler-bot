@@ -22,7 +22,7 @@ async def has_owner_role(message):
         with db.connect() as session:
                 server_data = (
                     session.query(Servers)
-                    .filter_by(discord_server_id=message.server.id)
+                    .filter_by(discord_server_id=str(message.guild.id))
                     .first()
                 )
                 session.expunge_all()
@@ -33,15 +33,15 @@ async def has_owner_role(message):
 
         if server_data is None:
             # No data about this server has been found
-            await disc.send_message(message.channel, embed=embeds.Error("Error executing command", "This server is not setup."))
+            await message.channel.send(embed=embeds.Error("Error executing command", "This server is not setup."))
             return False
         elif sd["timezone"] is None or sd["owner_role"] is None:
             # timezone or owner role hasn't been set up
-            await disc.send_message(message.channel, embed=embeds.Error("Error executing command", "Server timezone or owner_role are missing."))
+            await message.channel.send(embed=embeds.Error("Error executing command", "Server timezone or owner_role are missing."))
             return False
-        elif sd["owner_role"] not in [role.id for role in message.author.roles]:
+        elif int(sd["owner_role"]) not in [role.id for role in message.author.roles]:  # Conversion to int required since the update
             # Server has data, but sender of the message doesn't have owner role
-            await disc.send_message(message.channel, embed=embeds.Error("Error executing command", "Insufficient permissions."))
+            await message.channel.send(embed=embeds.Error("Error executing command", "Insufficient permissions."))
             return False
         else:
             # everything is cool
@@ -74,7 +74,7 @@ class AddScrim(Command):
 
     async def action(self, bot, message):
         if await has_owner_role(message):
-            await bot.add_scrim(message)
+            await bot.add_scrim(message)  # FIXME: A corriger
 
 class DeleteScrim(Command):
     activation_string = "!scrimdelete"
