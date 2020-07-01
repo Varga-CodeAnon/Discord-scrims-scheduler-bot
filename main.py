@@ -53,8 +53,8 @@ async def periodicReminders():
                 # check if bot is connected to this server
                 # quickfix for spamming errors
                 found = False
-                for ser in client.servers:
-                    if sd["discord_server_id"] == ser.id:
+                for ser in client.guilds:  # "guild" instead of "server"
+                    if sd["discord_server_id"] == str(ser.id):
                         found = True
                 if found is False:
                     continue # skip this scrim since bot has been kicked from server
@@ -77,7 +77,7 @@ async def periodicReminders():
                 embed.add_field(name="Timezone", value=time_start_server.tzinfo, inline=True)
                 embed.add_field(name="Opponent", value=scrim["enemy_team"], inline=True)
                 # send embed to reminder channel
-                await disc.send_message(discord.Object(sd["channel_id_reminder"]), content="<@&%s>" % sd["mention_role"], embed=embed)
+                await client.get_channel(int(sd["channel_id_reminder"])).send(content="<@&%s>" % sd["mention_role"], embed=embed)
         # set all scrims to notified = True
         with db.connect() as session:
             scrims = session.query(Scrims).filter(Scrims.time_start <= utc_now_15min).\

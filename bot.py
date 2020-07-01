@@ -144,7 +144,7 @@ class Scrim_bot:
             enemy_team_name = " ".join(str(x) for x in vals[4:])
             # save the entry into database
             with db.connect() as session:
-                scrim = Scrims(message.guild.id, scrim_date, utc_ts, utc_te, enemy_team_name)
+                scrim = Scrims(str(message.guild.id), scrim_date, utc_ts, utc_te, enemy_team_name)
                 session.add(scrim)
                 session.flush()
                 session.expunge_all()
@@ -194,9 +194,9 @@ class Scrim_bot:
         vals = message.content.split(" ")
         if len(vals) == 2:
             with db.connect() as session:
-                server = session.query(Servers).filter_by(discord_server_id=message.guild.id).first()
+                server = session.query(Servers).filter_by(discord_server_id=str(message.guild.id)).first()
                 scrim = session.query(Scrims).filter(Scrims.id == vals[1]).first()
-                res = session.query(Scrims).filter(Scrims.id == vals[1]).filter(Scrims.discord_server_id == message.guild.id).delete()
+                res = session.query(Scrims).filter(Scrims.id == vals[1]).filter(Scrims.discord_server_id == str(message.guild.id)).delete()
                 session.expunge_all()
             
             if res == 1:
@@ -229,7 +229,7 @@ class Scrim_bot:
         if len(vals) >= 6:
             # identical parsing to !scrimadd, just shifted arguments (cuz of ID)
             with db.connect() as session:
-                query = session.query(Servers).filter_by(discord_server_id=message.guild.id).first()
+                query = session.query(Servers).filter_by(discord_server_id=str(message.guild.id)).first()
                 session.expunge_all()
 
             server_data = query.as_dict()
@@ -261,10 +261,10 @@ class Scrim_bot:
             
             # update record in database
             with db.connect() as session:
-                server = session.query(Servers).filter_by(discord_server_id=message.guild.id).first()
+                server = session.query(Servers).filter_by(discord_server_id=str(message.guild.id)).first()
                 # I only need teamup_event_id and teamup_event_version, so it's fine querying it before edit
                 scrim = session.query(Scrims).filter(Scrims.id == vals[1]).first() 
-                res = session.query(Scrims).filter(Scrims.discord_server_id == message.guild.id).\
+                res = session.query(Scrims).filter(Scrims.discord_server_id == str(message.guild.id)).\
                                             filter(Scrims.id == vals[1]).\
                                             update({"date": scrim_date,
                                                     "time_start": utc_ts,
@@ -300,7 +300,7 @@ class Scrim_bot:
                         await message.channel.send(embed=embeds.Error("TeamUP Error", tup_data["error"]["message"]))
                     else:
                         with db.connect() as session:
-                            res = session.query(Scrims).filter(Scrims.discord_server_id == message.guild.id).\
+                            res = session.query(Scrims).filter(Scrims.discord_server_id == str(message.guild.id)).\
                                                         filter(Scrims.id == vals[1]).\
                                                         update({"teamup_event_version": tup_data["event"]["version"]})
                             session.expunge_all()
