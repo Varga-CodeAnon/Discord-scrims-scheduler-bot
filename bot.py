@@ -21,7 +21,7 @@ db = Database()
 class Scrim_bot:
     commands = []
 
-
+# ========================================================================================================================================
     async def update_schedule(self, message):
         today = datetime.today()
         week_from_today = today + timedelta(days=7)
@@ -41,7 +41,7 @@ class Scrim_bot:
             else:
                 await message.channel.send(embed=embeds.Error("Schedule message not found", "Schedule update unsuccessful, you probably deleted schedule message, setup server again to create a new one."))          
 
-
+# ========================================================================================================================================
     async def setup(self, message):
         '''
 		    Command: !setup  [timezone]         [owner]               [mention]          [schedule-channel]   [reminder-channel]
@@ -61,7 +61,7 @@ class Scrim_bot:
                 if len(channel_mentions) == 2:
                     schedule_channel_id = channel_mentions[0]
                     reminder_channel_id = channel_mentions[1]
-                    msg = await message.channel.send("...")
+                    msg = await client.get_channel(int(schedule_channel_id)).send("...")  # Conversion to int required since the update
                     if msg is not None:
                         # Save server data to server for future use
                         with db.connect() as session:
@@ -98,7 +98,8 @@ class Scrim_bot:
                 await message.channel.send(embed=embeds.Error("Wrong arguments", "You need to provide 2 mentionable roles (owner + reminder)"))
         else:
             await message.channel.send(embed=embeds.Error("Wrong arguments", "Unknown timezone, try to use this [LINK](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) for reference."))
-   
+
+# ========================================================================================================================================
     async def add_scrim(self, message):
         '''
            Command: !scrimadd [dd/mm] [hh:mm] [hh:mm] [enemy-team-name]
@@ -110,7 +111,7 @@ class Scrim_bot:
             with db.connect() as session:
                 query = (
                     session.query(Servers)
-                    .filter_by(discord_server_id=message.guild.id)
+                    .filter_by(discord_server_id=str(message.guild.id))
                     .first()
                 )
                 session.expunge_all()
@@ -183,6 +184,7 @@ class Scrim_bot:
             await message.channel.send(embed=embeds.Error("Wrong arguments", "Wrong argument provided, use `!scrimadd help` for help"))          
             return
 
+# ========================================================================================================================================
     async def delete_scrim(self, message):
         '''
             Deletes scrims by ID
@@ -216,6 +218,7 @@ class Scrim_bot:
         else:
             await message.channel.send(embed=embeds.Error("Wrong arguments", "Wrong argument provided, use `!scrimdelete help` for help"))
 
+# ========================================================================================================================================
     async def edit_scrim(self, message):
         '''
             Edits already existing scrim by ID
@@ -308,7 +311,7 @@ class Scrim_bot:
         else:
             await message.channel.send(embed=embeds.Error("Wrong arguments", "Wrong argument provided, use `!scrimedit help` for help"))
 
-
+# ========================================================================================================================================
     async def update_schedule_by_server_id(self, server_id):
         today = datetime.today()
         week_from_today = today + timedelta(days=7)
@@ -324,6 +327,7 @@ class Scrim_bot:
             if msg is not None:
                 await disc.edit_message(msg, embed=schedule_embed)
 
+# ========================================================================================================================================
     #---------------------------------------------------------------------------------------
     # TEAM UP STUFF
     #--------------------------------------------------------------------------------------- 
