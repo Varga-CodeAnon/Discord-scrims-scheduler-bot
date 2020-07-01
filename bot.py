@@ -21,10 +21,31 @@ db = Database()
 class Scrim_bot:
     commands = []
 
+
+    async def update_schedule(self, message):
+        today = datetime.today()
+        week_from_today = today + timedelta(days=7)
+
+        with db.connect() as session:
+            query = session.query(Servers).filter(Servers.discord_server_id == str(message.guild.id)).first()
+            session.expunge_all()
+        
+        if query is not None:
+            server_data = query.as_dict()
+            schedule_embed = embeds.get_schedule_embed(today, week_from_today, server_data["discord_server_id"], server_data["timezone"])
+            # msg = await disc.get_message(discord.Object(server_data["channel_id_schedule"]), server_data["message_id_schedule"])
+            msg = await client.get_channel(int(server_data["channel_id_schedule"])).fetch_message(int(server_data["message_id_schedule"]))
+            if msg is not None:
+                # await disc.edit_message(msg, embed=schedule_embed)
+                await msg.edit(embed=schedule_embed)
+            else:
+                await message.channel.send(embed=embeds.Error("Schedule message not found", "Schedule update unsuccessful, you probably deleted schedule message, setup server again to create a new one."))          
+
+
     async def setup(self, message):
         '''
 		    Command: !setup  [timezone]         [owner]               [mention]          [schedule-channel]   [reminder-channel]
-                     !setup Europe/Paris <@&727821582361296946> <@&727821634135785534> <#727632042090823762> <#603885833216327680>
+                     !setup Europe/Paris <@&727821282361296946> <@&727841634135785534> <#727635042090823762> <#603885833266327680>
               vals -    0       1
             Whole setup is contained in one command to keep it simple
         '''
@@ -62,7 +83,7 @@ class Scrim_bot:
                                                                             "timezone": vals[1]})
                         
                                 session.expunge_all()
-                        await self.update_schedule(message) # FIXME: à corriger et ce sera bon
+                        await self.update_schedule(message)
                         # Get saved channel names
                         schedule_channel_name = message.guild.get_channel(int(schedule_channel_id)) # Conversion to int required since the update
                         reminder_channel_name = message.guild.get_channel(int(reminder_channel_id))
@@ -287,25 +308,6 @@ class Scrim_bot:
         else:
             await message.channel.send(embed=embeds.Error("Wrong arguments", "Wrong argument provided, use `!scrimedit help` for help"))
 
-    #
-    # TODO - in one function plzzzzzzzz
-    #
-    async def update_schedule(self, message):
-        today = datetime.today()
-        week_from_today = today + timedelta(days=7)
-
-        with db.connect() as session:
-            query = session.query(Servers).filter(Servers.discord_server_id == str(message.guild.id)).first()
-            session.expunge_all()
-        
-        if query is not None:
-            server_data = query.as_dict()
-            schedule_embed = embeds.get_schedule_embed(today, week_from_today, server_data["discord_server_id"], server_data["timezone"])
-            msg = await disc.get_message(discord.Object(server_data["channel_id_schedule"]), server_data["message_id_schedule"])
-            if msg is not None:
-                await disc.edit_message(msg, embed=schedule_embed)
-            else:
-                await message.channel.send(embed=embeds.Error("Schedule message not found", "Schedule update unsuccessful, you probably deleted schedule message, setup server again to create a new one."))          
 
     async def update_schedule_by_server_id(self, server_id):
         today = datetime.today()
