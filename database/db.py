@@ -10,28 +10,29 @@ class Database(object):
     _instance = None
     dummy = None
 
-    def __new__(class_, *args, **kwargs):
-        if not isinstance(class_._instance, class_):
-            class_._instance = object.__new__(class_, *args, **kwargs)
-        return class_._instance
+    def __new__(cls, *args, **kwargs):
+        if not isinstance(cls._instance, cls):
+            cls._instance = object.__new__(cls, *args, **kwargs)
+        return cls._instance
 
     def __init__(self):
         if self.dummy is None:
             self.dummy = self
             self.initialize()
-            print("Database pooling created successfully")
+            print("[*] Database pooling created successfully!")
 
     def initialize(self):
         self.session = None
         self._conn_str = "{0}+{1}://{2}:{3}@{4}/{5}".format(
-            "postgresql", "psycopg2", cfg.postgres["user"], cfg.postgres["password"], cfg.postgres["host"], cfg.postgres["database"]
+            "postgresql", "psycopg2", cfg.postgres["user"], cfg.postgres[
+                "password"], cfg.postgres["host"], cfg.postgres["database"]
         )
-        print('Connecting to: "{0}"'.format(self._conn_str))
+        print('[*] Connecting to: "{0}"...'.format(self._conn_str))
         self._engine = create_engine(
             self._conn_str, connect_args={"port": 5432}, echo=False
         )
 
-        print("Initializing database schema")
+        print("[*] Initializing database schema...")
         self.init_schema()
 
     def init_schema(self):
@@ -43,7 +44,8 @@ class Database(object):
     @contextmanager
     def connect(self, autocommit=False):
         Session = scoped_session(
-            sessionmaker(bind=self._engine, autocommit=autocommit, autoflush=False)
+            sessionmaker(bind=self._engine,
+                         autocommit=autocommit, autoflush=False)
         )
 
         session = Session()

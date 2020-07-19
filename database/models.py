@@ -4,16 +4,18 @@ from datetime import datetime
 import math
 import time
 
+
 class Servers(Base):
     __tablename__ = "servers"
 
-    discord_server_id = Column(String, primary_key=True, nullable=False, autoincrement=False)
+    discord_server_id = Column(
+        String, primary_key=True, nullable=False, autoincrement=False)
     discord_server_name = Column(String, nullable=False)
     timezone = Column(String, nullable=False)
- 
+
     mention_role = Column(String, nullable=False)
     owner_role = Column(String, nullable=False)
-    
+
     channel_id_schedule = Column(String, nullable=False)
     channel_id_reminder = Column(String, nullable=False)
     message_id_schedule = Column(String, nullable=False)
@@ -22,8 +24,7 @@ class Servers(Base):
     teamup_subcalendar_id = Column(String, nullable=True)
     teamup_lastcheck_timestamp = Column(BigInteger, nullable=True)
 
-
-    def __init__(self, discord_server_id, discord_server_name, timezone, owner_role, mention_role, channel_id_schedule, channel_id_reminder, message_id_schedule):        
+    def __init__(self, discord_server_id, discord_server_name, timezone, owner_role, mention_role, channel_id_schedule, channel_id_reminder, message_id_schedule):
         self.discord_server_id = discord_server_id
         self.discord_server_name = discord_server_name
         self.timezone = timezone
@@ -46,14 +47,15 @@ class Servers(Base):
             "message_id_schedule": self.message_id_schedule,
             "teamup_calendarkey": self.teamup_calendarkey,
             "teamup_subcalendar_id": self.teamup_subcalendar_id,
-            "teamup_lastcheck_timestamp": self.teamup_lastcheck_timestamp 
+            "teamup_lastcheck_timestamp": self.teamup_lastcheck_timestamp
         }
+
 
 class Scrims(Base):
     __tablename__ = "scrims"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    
+
     discord_server_id = Column(String, nullable=False)
     date = Column(Date, nullable=False)
     time_start = Column(DateTime, nullable=False)
@@ -64,8 +66,7 @@ class Scrims(Base):
 
     notified = Column(Boolean)
 
-
-    def __init__(self, discord_server_id, date, time_start, time_end, enemy_team, teamup_event_id=None, teamup_event_version=None):        
+    def __init__(self, discord_server_id, date, time_start, time_end, enemy_team, teamup_event_id=None, teamup_event_version=None):
         self.discord_server_id = discord_server_id
         self.date = date
         self.time_start = time_start
@@ -78,7 +79,7 @@ class Scrims(Base):
     def as_dict(self):
         return {
             "id": self.id,
-            "discord_server_id" : self.discord_server_id,
+            "discord_server_id": self.discord_server_id,
             "date": self.date,
             "time_start": self.time_start,
             "time_end": self.time_end,

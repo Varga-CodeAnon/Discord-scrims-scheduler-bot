@@ -17,7 +17,7 @@ class Discord_bot:
             self.client = discord.Client()
 
             if self.client is not None:
-                print("[*] Discord bot pooling created successfully")
+                print("[*] Discord bot pooling created successfully!")
 
     def get_client(self):
         return self.client
