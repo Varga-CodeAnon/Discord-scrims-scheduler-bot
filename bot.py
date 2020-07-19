@@ -22,7 +22,7 @@ class Scrim_bot:
     commands = []
 
 # ========================================================================================================================================
-    async def update_schedule(self, message):
+    async def update_schedule(self, message):  #FIXME: Le static schedule n'est pas actif
         today = datetime.today()
         week_from_today = today + timedelta(days=7)
 
@@ -32,11 +32,14 @@ class Scrim_bot:
         
         if query is not None:
             server_data = query.as_dict()
-            schedule_embed = embeds.get_schedule_embed(today, week_from_today, server_data["discord_server_id"], server_data["timezone"])
+            schedule_embed = embeds.get_schedule_embed(today, week_from_today, server_data["discord_server_id"], server_data["timezone"])  # FIXME: Le problème viendrait-il de là ?
             # msg = await disc.get_message(discord.Object(server_data["channel_id_schedule"]), server_data["message_id_schedule"])
             msg = await client.get_channel(int(server_data["channel_id_schedule"])).fetch_message(int(server_data["message_id_schedule"]))
             if msg is not None:
                 # await disc.edit_message(msg, embed=schedule_embed)
+                print("Embed",type(schedule_embed))
+                print(schedule_embed.title)
+                print(schedule_embed.fields)
                 await msg.edit(embed=schedule_embed)
             else:
                 await message.channel.send(embed=embeds.Error("Schedule message not found", "Schedule update unsuccessful, you probably deleted schedule message, setup server again to create a new one."))          

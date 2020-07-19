@@ -55,8 +55,13 @@ def get_schedule_embed(start_date, end_date, server_id, server_timezone):
 
     # get all scrims from server between start_date and end_date
     with db.connect() as session:
-        scrims_data = session.query(Scrims).filter(Scrims.discord_server_id == server_id).\
-                                            filter(Scrims.date.between(start_date_fmt, end_date_fmt)).\
+        print(type(Scrims.discord_server_id), Scrims.discord_server_id)
+        print(type(server_id), server_id)
+        print("Booleen :", Scrims.discord_server_id == server_id)
+        # scrims_data = session.query(Scrims).filter(Scrims.discord_server_id == server_id).\
+        #                                     filter(Scrims.date.between(start_date_fmt, end_date_fmt)).\
+        #                                     order_by(Scrims.time_start).all()
+        scrims_data = session.query(Scrims).filter(Scrims.date.between(start_date_fmt, end_date_fmt)).\
                                             order_by(Scrims.time_start).all()
         session.expunge_all()
     # create schedule embed 
@@ -70,13 +75,15 @@ def get_schedule_embed(start_date, end_date, server_id, server_timezone):
     delta = end_date - start_date
     number_of_days = delta.days
     schedule = [[] for day in range(0, number_of_days + 1)]
-    for scrim in scrims_data:
+    print("Len scrim data :",len(scrims_data))
+    for scrim in scrims_data:  # FIXME: scrims_data semble vide, pas normal...
         # put scrims into array by their day in the week (easier to turn into day-name)
         sd = scrim.as_dict()
         if (sd["date"].timetuple().tm_yday -1) < (start_date.timetuple().tm_yday - 1):
             index = sd["date"].timetuple().tm_yday - 1 + 365 - (start_date.timetuple().tm_yday - 1)
         else:
             index = (sd["date"].timetuple().tm_yday - 1) - (start_date.timetuple().tm_yday - 1)
+        print("Append...")
         schedule[index].append(sd)
     
     # timezone formating stuff
@@ -86,6 +93,7 @@ def get_schedule_embed(start_date, end_date, server_id, server_timezone):
     i = 0
     for scrims_in_day in schedule:
         day_date = start_date + timedelta(days=i)
+        print(len(scrims_in_day))  # FIXME: n'est pas censé être à 0
         if len(scrims_in_day) > 0:
             day_string = ""
             for scrim in scrims_in_day:
