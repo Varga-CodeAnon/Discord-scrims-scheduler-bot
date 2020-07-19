@@ -25,12 +25,14 @@ bot.commands.append(commands.EditScrim())
 bot.commands.append(commands.UpdateSchedule())
 bot.commands.append(commands.TeamupSetup())
 
-#if cfg.bot["version"] == "dev":
+# if cfg.bot["version"] == "dev":
 #    bot.commands.append(commands.StopCommand())
 
 db = Database()
 
 # loop checking for reminders / updates
+
+
 async def periodicReminders():
     while True:
         utc_now = datetime.now(timezone("UTC"))
@@ -39,13 +41,15 @@ async def periodicReminders():
         fmt = "%H:%M"
         # get all scrims that are happening in ~15 minutes
         with db.connect() as session:
-            scrims = session.query(Scrims).filter(Scrims.time_start <= utc_now_15min).filter(Scrims.notified == False).all()
+            scrims = session.query(Scrims).filter(
+                Scrims.time_start <= utc_now_15min).filter(Scrims.notified == False).all()
             session.expunge_all()
 
         for scrim in scrims:
             scrim = scrim.as_dict()
             with db.connect() as session:
-                server = session.query(Servers).filter(Servers.discord_server_id == scrim["discord_server_id"]).first()
+                server = session.query(Servers).filter(
+                    Servers.discord_server_id == scrim["discord_server_id"]).first()
                 session.expunge_all()
             if server is not None:
                 sd = server.as_dict()
@@ -56,7 +60,7 @@ async def periodicReminders():
                     if sd["discord_server_id"] == str(ser.id):
                         found = True
                 if found is False:
-                    continue # skip this scrim since bot has been kicked from server
+                    continue  # skip this scrim since bot has been kicked from server
 
                 # timezones stuff
                 server_tz = timezone(sd["timezone"])
@@ -67,30 +71,40 @@ async def periodicReminders():
                 time_start_server = scrim["time_start"].astimezone(server_tz)
                 time_end_server = scrim["time_end"].astimezone(server_tz)
                 # Embed to inform people assembling
-                embed = embeds.Info("Scrim happening", "There is a scrim happening in less than 15 minutes")
-                embed.set_thumbnail(url="http://patrikpapso.com/images/swords.png")
+                embed = embeds.Info(
+                    "Scrim happening", "There is a scrim happening in less than 15 minutes")
+                embed.set_thumbnail(
+                    url="http://patrikpapso.com/images/swords.png")
                 embeds.add_embed_footer(embed)
-                embed.add_field(name="Date", value=time_start_server.strftime(fmt_date), inline=False)
-                embed.add_field(name="Start of the scrim",value=time_start_server.strftime(fmt),inline=True)
-                embed.add_field(name="End of the scrim",value=time_end_server.strftime(fmt),inline=True)
-                embed.add_field(name="Timezone", value=time_start_server.tzinfo, inline=True)
-                embed.add_field(name="Opponent", value=scrim["enemy_team"], inline=True)
+                embed.add_field(name="Date", value=time_start_server.strftime(
+                    fmt_date), inline=False)
+                embed.add_field(name="Start of the scrim",
+                                value=time_start_server.strftime(fmt), inline=True)
+                embed.add_field(name="End of the scrim",
+                                value=time_end_server.strftime(fmt), inline=True)
+                embed.add_field(name="Timezone",
+                                value=time_start_server.tzinfo, inline=True)
+                embed.add_field(name="Opponent",
+                                value=scrim["enemy_team"], inline=True)
                 # send embed to reminder channel
                 await client.get_channel(int(sd["channel_id_reminder"])).send(content="<@&%s>" % sd["mention_role"], embed=embed)
         # set all scrims to notified = True
         with db.connect() as session:
             scrims = session.query(Scrims).filter(Scrims.time_start <= utc_now_15min).\
-                                           filter(Scrims.notified == False).\
-                                           update({"notified": True})
+                filter(Scrims.notified == False).\
+                update({"notified": True})
             session.expunge_all()
 
         await asyncio.sleep(300)  # do every 5 minutes
 
 # loop checking for TeamUP sync timings
+
+
 async def periodicTeamUPSync():
     while True:
         with db.connect() as session:
-            servers = session.query(Servers).filter(Servers.teamup_calendarkey != None).all()
+            servers = session.query(Servers).filter(
+                Servers.teamup_calendarkey != None).all()
             session.expunge_all()
 
         for server in servers:
@@ -100,25 +114,26 @@ async def periodicTeamUPSync():
             if server_data["teamup_lastcheck_timestamp"] == None:
                 with db.connect() as session:
                     res = session.query(Servers).filter(Servers.discord_server_id == server_data["discord_server_id"]).\
-                                                 update({"teamup_lastcheck_timestamp": timestamp_now})
+                        update({"teamup_lastcheck_timestamp": timestamp_now})
             else:
-                ts_diff = math.floor((timestamp_now - server_data["teamup_lastcheck_timestamp"])/60) # diff minutes
-            
+                ts_diff = math.floor(
+                    (timestamp_now - server_data["teamup_lastcheck_timestamp"])/60)  # diff minutes
+
                 # check if at least 5 minutes passed since last check
                 if ts_diff >= 5:
                     await bot.teamup_changed(server_data["discord_server_id"])
                     with db.connect() as session:
                         res = session.query(Servers).filter(Servers.discord_server_id == server_data["discord_server_id"]).\
-                                                     update({"teamup_lastcheck_timestamp": timestamp_now})
+                            update({"teamup_lastcheck_timestamp": timestamp_now})
                     await bot.update_schedule_by_server_id(server_data["discord_server_id"])
 
-        await asyncio.sleep(120) # do every 2 minutes
+        await asyncio.sleep(120)  # do every 2 minutes
+
 
 @client.event
 async def on_ready():
-    print("Logged in as")
-    print(client.user.name)
-    print(client.user.id)
+    print("[*] Logged in as", client.user.name, "(id :", client.user.id, ")")
+    print("[*] Enjoy!")
     print("------")
     client.loop.create_task(periodicReminders())
     client.loop.create_task(periodicTeamUPSync())
@@ -126,6 +141,8 @@ async def on_ready():
     game = discord.Game("schedule a tournament")
     await client.change_presence(status=discord.Status.idle, activity=game)
 # on message go through registered commands
+
+
 @client.event
 async def on_message(message):
     for command in bot.commands:
@@ -141,4 +158,5 @@ async def on_message(message):
 
 
 print(cfg)
-client.run( cfg.bot["prod_token"] if cfg.bot["version"] == "prod" else cfg.bot["dev_token"])
+client.run(cfg.bot["prod_token"] if cfg.bot["version"]
+           == "prod" else cfg.bot["dev_token"])
