@@ -22,7 +22,7 @@ class Scrim_bot:
     commands = []
 
 # ========================================================================================================================================
-    async def update_schedule(self, message):  #FIXME: Le static schedule n'est pas actif
+    async def update_schedule(self, message):
         today = datetime.today()
         week_from_today = today + timedelta(days=7)
 
@@ -32,7 +32,7 @@ class Scrim_bot:
         
         if query is not None:
             server_data = query.as_dict()
-            schedule_embed = embeds.get_schedule_embed(today, week_from_today, server_data["discord_server_id"], server_data["timezone"])  # FIXME: Le problème viendrait-il de là ?
+            schedule_embed = embeds.get_schedule_embed(today, week_from_today, server_data["discord_server_id"], server_data["timezone"])
             # msg = await disc.get_message(discord.Object(server_data["channel_id_schedule"]), server_data["message_id_schedule"])
             msg = await client.get_channel(int(server_data["channel_id_schedule"])).fetch_message(int(server_data["message_id_schedule"]))
             if msg is not None:
@@ -128,7 +128,7 @@ class Scrim_bot:
             if len(date) == 3:
                 scrim_year = date[2]
 
-            scrim_date = "{}/{}/{}".format(date[1], date[0], scrim_year)
+            scrim_date = "{}/{}/{}".format(date[0], date[1], scrim_year)  # this format has to be dd/mm/yyyy 
             # datetime formatting
             fmt = "%H:%M"
             fmt_date = "%Y-%m-%d"
@@ -138,6 +138,7 @@ class Scrim_bot:
             ts = vals[2].split(":") # time-start
             te = vals[3].split(":") # time-end
             # localize this datetime to server's timezone
+            #                                  datetime(     year            month         day           hour      minute  second)
             time_start_tz = server_tz.localize(datetime(int(scrim_year), int(date[1]), int(date[0]), int(ts[0]), int(ts[1]), 0))
             time_end_tz   = server_tz.localize(datetime(int(scrim_year), int(date[1]), int(date[0]), int(te[0]), int(te[1]), 0))
             # localize these datetimes to UTC for database storage
@@ -244,7 +245,7 @@ class Scrim_bot:
             if len(date) == 3:
                 scrim_year = date[2]
 
-            scrim_date = "{}/{}/{}".format(date[1], date[0], scrim_year)
+            scrim_date = "{}/{}/{}".format(date[0], date[1], scrim_year)  # this format has to be dd/mm/yyyy 
             # datetime formatting
             fmt = "%H:%M"
             fmt_date = "%Y-%m-%d"

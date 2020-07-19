@@ -69,12 +69,12 @@ class Setup(Command):
 
 class AddScrim(Command):
     activation_string = "!scrimadd"
-    help_string = "Adds scrim to schedule:\n**Arguments**:\n`!scrimadd [date] [time-start] [time-end] [enemy-team-name]`" # TODO
+    help_string = "Adds scrim to schedule:\n**Arguments**:\n`!scrimadd [date] [time-start] [time-end] [enemy-team-name]`"
     example = "`!scrimadd 17/10 18:00 20:00 Dallas Fuel`"
 
     async def action(self, bot, message):
         if await has_owner_role(message):
-            await bot.add_scrim(message)  # FIXME: A corriger
+            await bot.add_scrim(message)
 
 class DeleteScrim(Command):
     activation_string = "!scrimdelete"
