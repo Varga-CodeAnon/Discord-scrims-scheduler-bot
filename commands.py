@@ -5,7 +5,6 @@ import embeds
 import config as cfg
 from database.db import Database
 from database.models import Servers
-import teamup
 
 disc = Discord_bot()
 client = disc.get_client()

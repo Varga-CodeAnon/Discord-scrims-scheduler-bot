@@ -2,21 +2,22 @@ import discord
 import asyncio
 from datetime import datetime
 
+
 class Discord_bot:
     _instance = None
     client = None
 
-    def __new__(class_, *args, **kwargs):
-        if not isinstance(class_._instance, class_):
-            class_._instance = object.__new__(class_, *args, **kwargs)
-        return class_._instance
+    def __new__(cls, *args, **kwargs):
+        if not isinstance(cls._instance, cls):
+            cls._instance = object.__new__(cls, *args, **kwargs)
+        return cls._instance
 
     def __init__(self):
         if self.client is None:
             self.client = discord.Client()
 
             if self.client is not None:
-                print("Discord bot pooling created successfully")
+                print("[*] Discord bot pooling created successfully")
 
     def get_client(self):
         return self.client
@@ -30,7 +31,7 @@ class Discord_bot:
         except Exception as e:
             pass
             #print("ERROR: cmonBruh (send_message) - "+ str(e) + " " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-      
+
     async def get_message(self, channel, id):
         '''
             Wrapper for getting a message to handle exceptions

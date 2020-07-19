@@ -10,7 +10,6 @@ import config as cfg
 from datetime import datetime, timedelta
 from pytz import timezone
 import embeds
-import teamup
 import time
 import math
 

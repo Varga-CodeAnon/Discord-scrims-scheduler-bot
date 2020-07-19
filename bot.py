@@ -9,7 +9,6 @@ from pytz import timezone, all_timezones
 from database.models import Servers, Scrims
 from database.db import Database
 import embeds
-import teamup
 import re
 
 
